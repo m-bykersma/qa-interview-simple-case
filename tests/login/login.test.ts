@@ -1,29 +1,38 @@
 import { test, expect } from '@playwright/test'
 import { existingUsers } from '../../test-setup/localstorage.setup'
+import { getRandomUser, validateVisibilityAndFill, buttonEnabledAndClick} from '../../utilities/standard-functions'
+import loginPageLocators from '../../object-locators/loginPage.object-locators'
+import landingPageLocators from '../../object-locators/landingPage.object-locators'
 
 test.describe.configure({ mode: 'serial' })
 
 test.describe('login form tests', () => {
   test('logging in works with existing account', async ({ page }) => {
-    await page.goto('localhost:8080/login')
+    // Navigate to page
+    await page.goto('http://localhost:8080/')
 
-    const existingUser = existingUsers[0]
+    // Select a random user from the database and log user details to console
+    const existingUser = getRandomUser(existingUsers);
 
-    await page
-      .locator('#root form div:nth-child(1) > div > input')
-      .pressSequentially(existingUser.email)
+    // Set relevant inputs to locator type for functions
+    const emailInput = page.locator(loginPageLocators.emailInput)
+    const passwordInput = page.locator(loginPageLocators.passwordInput)
+    const loginButton = page.locator(loginPageLocators.loginButton)
+    const logoutButton = page.locator(landingPageLocators.logoutButton)
 
-    await page
-      .locator('#root form div:nth-child(2) > div > input')
-      .pressSequentially(existingUser.password)
+    // Input email and password
+    await validateVisibilityAndFill(emailInput,existingUser.email)
+    await validateVisibilityAndFill(passwordInput,existingUser.password)
 
-    // Submit button
-    const button = page.locator('form .MuiButton-sizeMedium')
-    // Click on the button
-    button.click()
+    // Validate button has been enabled and click. This is required for login and signup when minimum requirements are met.
+    await buttonEnabledAndClick(loginButton)
 
-    // Wait for 1 second until page is fully loaded
-    await page.waitForTimeout(1000)
-    await expect(page.getByText('Log out')).toBeVisible()
+    // Validate successful login for correct user and take a screenshot for evidence.
+    await expect(logoutButton).toBeVisible({timeout: 5000})
+    await expect(page.getByText(existingUser.firstName && existingUser.lastName)).toBeVisible({timeout: 5000})
+    await page.screenshot({ path: 'screenshots/LoginTestScreenshot.png' });
+
+    // Test case teardown - logout
+    await buttonEnabledAndClick(logoutButton)
   })
 })
