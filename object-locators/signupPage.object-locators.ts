@@ -2,8 +2,9 @@
 
 export default{
     firstNameInput: 'id=firstName',
-    lastnameInput: 'id=lastName',
+    lastNameInput: 'id=lastName',
     emailInput: 'id=email',
     passwordInput: 'id=password',
-    submitButton: '//button[contains(text(),"Submit")]'
+    submitButton: '//button[contains(text(),"Submit")]',
+    logoutButton: '//button[contains(text(),"Log out")]',
 }
